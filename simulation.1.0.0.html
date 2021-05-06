@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<canvas id="newCanvas" width=1450 height=750></canvas>
+		<style>
+			
+		</style>
+		<script>
+			var c=document.getElementById("newCanvas").getContext("2d");
+			var r=3;
+
+
+			var Scale=200;
+
+			var t=1;
+			
+			var AU=149598073, G=6.674*Math.pow(10,-11)
+			var mSUN=1989000
+			var dEARTH=0.98326, mEARTH=5.97237, vxEARTH=30.03990109
+			var Coordinates=[
+					[0,0,0,mSUN,0,0,0],
+					[0,dEARTH,0,mEARTH,vxEARTH,0,0]
+				] //x,y,z,mass,velocity(x,y,z)
+
+			function boxoutline() {
+				var cd=[[50,30,700,700],[780,30,600,470],[780,530,600,200]]
+				for (var i=0; i<3; i++) {
+					c.beginPath();
+					c.rect(cd[i][0],cd[i][1],cd[i][2],cd[i][3]);
+					c.closePath();
+					c.stroke();
+				}
+			}
+
+			function start() {
+				for (var i=0; i<Coordinates.length; i++) {
+					var x=(Coordinates[i][0])*Scale+1080-r
+					var y=(Coordinates[i][1])*Scale+265-r
+					c.beginPath();
+					c.arc(x,y,r,0,Math.PI*2)
+					c.fill();
+					c.stroke();
+					c.closePath();
+				}
+			}
+
+			function update() {
+				for (var i=0; i<Coordinates.length; i++) {
+					var x=(Coordinates[i][0])*Scale+1080-r
+					var y=(Coordinates[i][1])*Scale+265-r
+					c.clearRect(x,y,2*r,2*r);
+				}
+				motion();
+				start();
+				t=window.getElementById("info").value
+				window.setTimeout(update,17);
+			}
+
+			function motion() {
+				for (var i=0; i<Coordinates.length; i++) {
+					displacement=[]
+					distance=[]
+					for (var j=0; j<Coordinates.length; j++) {
+						if (Coordinates[i]!=Coordinates[j]) {
+							dist=0
+							for (var k=0; k<3; k++) {
+								distance[k]=Coordinates[j][k]-Coordinates[i][k]
+								dist+=Math.pow(distance[k],2)
+							}
+							acc=G*Coordinates[j][3]/dist
+						}
+					}
+					for (var l=0; l<3; l++) {
+						displacement[l]+=(distance[l]*acc/dist)/2*Math.pow(t,2)
+						 //ratio of net force against distance to calculate axial acceleration
+						 Coordinates[i][l]+=(displacement[l]/1000+t*Coordinates[i][l+3])/AU
+					}
+					document.getElementById("data").innerHTML=Coordinates[1][1]
+				}
+			}
+			
+
+
+		</script>
+	</head>
+	<body>
+		<script>
+			boxoutline();
+			start();
+		</script>
+		<span id="data">N/A</span>
+		<button onclick="update()">Button</button>
+		<input type="text" id="info">
+	</body>
+</html>
